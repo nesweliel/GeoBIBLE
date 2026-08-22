@@ -1,0 +1,63 @@
+name: Consolidate GeoBIBLE Data Freeze
+
+on:
+  push:
+    branches: [consolidate-v1-final]
+
+permissions:
+  contents: write
+
+jobs:
+  import-canonical-freeze:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: consolidate-v1-final
+          fetch-depth: 0
+
+      - name: Restore all 187 canonical actor-period states
+        env:
+          STATES_GZ_B64: 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
+        run: |
+          python - <<'PY'
+          import os, base64, gzip, json
+          from pathlib import Path
+
+          raw = gzip.decompress(base64.b64decode(os.environ['STATES_GZ_B64']))
+          states = json.loads(raw.decode('utf-8'))
+          assert len(states) == 187, len(states)
+
+          states_path = Path('data/states/actor-period-states.v1.json')
+          states_path.write_text(json.dumps(states, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          validator = Path('app/scripts/validate-data.mjs')
+          text = validator.read_text(encoding='utf-8')
+          if "const statesDir = path.join(root, 'data/states')" not in text:
+              text = text.replace("const master = path.join(root, 'data/master')\n", "const master = path.join(root, 'data/master')\nconst statesDir = path.join(root, 'data/states')\n")
+              text = text.replace("const sources = read('sources.v1.json')\n", "const sources = read('sources.v1.json')\nconst states = JSON.parse(fs.readFileSync(path.join(statesDir, 'actor-period-states.v1.json'), 'utf8'))\n")
+              text = text.replace("  sources: [sources, 28],\n", "  sources: [sources, 28],\n  states: [states, 187],\n")
+              marker = "for (const id of requiredPeriods) if (!periodIds.has(id)) errors.push(`missing canonical period: ${id}`)\n"
+              state_validation = """\n\nfor (const [index, state] of states.entries()) {\n  if (!periodIds.has(state.period)) errors.push(`state ${index}: unknown period ${state.period}`)\n  if (!actorIds.has(state.actor_id)) errors.push(`state ${index}: unknown actor ${state.actor_id}`)\n  if (!state.status || !state.interest || !state.visibility_scale || !state.certainty) {\n    errors.push(`state ${index}: missing required temporal fields`)\n  }\n}\n\nconst leviState = states.find(state => state.period === 'P02' && state.actor_id === 'A014' && String(state.notes).includes('ללא פוליגון'))\nif (!leviState) errors.push('Actor-period states must preserve non-territorial Levi state')\nconst danMigrationState = states.find(state => state.period === 'P03F' && state.actor_id === 'A010')\nif (!danMigrationState || !String(danMigrationState.core_control).includes('ליש')) errors.push('Actor-period states must preserve Dan migration')\nconst p08Jebus = states.find(state => state.period === 'P08' && state.actor_id === 'A025' && state.status === 'עצמאית')\nif (!p08Jebus) errors.push('Actor-period states must preserve independent Jebusite Jerusalem in P08')\n"""
+              text = text.replace(marker, marker + state_validation)
+              text = text.replace("  sources: sources.length,\n", "  sources: sources.length,\n  actorPeriodStates: states.length,\n")
+              validator.write_text(text, encoding='utf-8')
+
+          readme = Path('data/states/README.md')
+          r = readme.read_text(encoding='utf-8')
+          r = r.replace('`actor-period-states.v1.json` is the first canonical migration of the research state model. Additional macro and local states can be appended only if their actor IDs and period IDs already exist in the canonical registries.', '`actor-period-states.v1.json` contains the complete Data Freeze v1 temporal state register: exactly **187 actor-period state records**. The CI data contract validates this exact count and all actor/period foreign keys. Runtime code should treat this file as the canonical temporal source of truth.')
+          readme.write_text(r, encoding='utf-8')
+          PY
+
+      - name: Commit canonical freeze
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/states/actor-period-states.v1.json data/states/README.md app/scripts/validate-data.mjs
+          if git diff --cached --quiet; then
+            echo "No data changes to commit"
+          else
+            git commit -m "Consolidate complete 187-state Data Freeze"
+            git push origin HEAD:consolidate-v1-final
+          fi
