@@ -5,7 +5,10 @@ export default defineConfig({
   plugins: [react()],
   base: '/',
   build: {
-    sourcemap: true,
-    target: 'es2022'
+    sourcemap: false,
+    target: 'es2022',
+    rollupOptions: {
+      external: ['react', 'react-dom/client', 'react/jsx-runtime', 'maplibre-gl']
+    }
   }
 })
