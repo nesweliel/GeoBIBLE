@@ -1,0 +1,39 @@
+name: GeoBIBLE CI
+
+on:
+  push:
+    branches: [alpha-0.1]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate-build-and-browser-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Validate canonical historical data
+        run: npm run validate:data
+
+      - name: TypeScript + Vite build
+        run: npm run build
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser verification
+        run: npm run test:e2e
