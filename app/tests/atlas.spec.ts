@@ -61,3 +61,14 @@ test('GeoBIBLE V1 search finds historical places', async ({ page }) => {
   await input.fill('ירושלים')
   await expect(page.getByRole('button', { name: /ירושלים/ }).first()).toBeVisible()
 })
+
+test('GeoBIBLE uses the complete canonical 187-state Data Freeze', async ({ page }) => {
+  await page.goto('/')
+  const badge = page.getByRole('button', { name: 'פתח רשם נתונים קנוני' })
+  await expect(badge).toContainText('187')
+  await badge.click()
+  await expect(page.getByRole('heading', { name: 'רשם המצבים הקנוני' })).toBeVisible()
+  await expect(page.locator('.canonical-summary strong').nth(0)).toHaveText('187')
+  await expect(page.locator('.canonical-summary strong').nth(1)).toHaveText('16')
+  await expect(page.getByText('שתי ממלכות — ירושלים עדיין עצמאית')).toBeVisible()
+})

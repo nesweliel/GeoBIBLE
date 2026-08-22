@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 const here = path.dirname(fileURLToPath(import.meta.url))
 const root = path.resolve(here, '../..')
 const master = path.join(root, 'data/master')
+const statesDir = path.join(root, 'data/states')
 const read = file => JSON.parse(fs.readFileSync(path.join(master, file), 'utf8'))
 const readParts = prefix => fs.readdirSync(master)
   .filter(file => file.startsWith(prefix) && file.endsWith('.json'))
@@ -19,6 +20,7 @@ const routes = read('routes.v1.json')
 const judges = read('judges-events.v1.json')
 const gaps = read('validation-gaps.v1.json')
 const sources = read('sources.v1.json')
+const states = JSON.parse(fs.readFileSync(path.join(statesDir, 'actor-period-states.v1.json'), 'utf8'))
 
 const errors = []
 
@@ -50,6 +52,7 @@ const expectedCounts = {
   judges: [judges, 15],
   gaps: [gaps, 22],
   sources: [sources, 28],
+  states: [states, 187],
 }
 for (const [label, [records, expected]] of Object.entries(expectedCounts)) {
   if (records.length !== expected) errors.push(`${label}: expected ${expected}, found ${records.length}`)
@@ -57,6 +60,22 @@ for (const [label, [records, expected]] of Object.entries(expectedCounts)) {
 
 const requiredPeriods = ['P01','P02','P03A','P03B','P03C','P03D','P03E','P03F','P04','P05','P06A','P06B','P06C','P06D','P07','P08']
 for (const id of requiredPeriods) if (!periodIds.has(id)) errors.push(`missing canonical period: ${id}`)
+
+
+for (const [index, state] of states.entries()) {
+  if (!periodIds.has(state.period)) errors.push(`state ${index}: unknown period ${state.period}`)
+  if (!actorIds.has(state.actor_id)) errors.push(`state ${index}: unknown actor ${state.actor_id}`)
+  if (!state.status || !state.interest || !state.visibility_scale || !state.certainty) {
+    errors.push(`state ${index}: missing required temporal fields`)
+  }
+}
+
+const leviState = states.find(state => state.period === 'P02' && state.actor_id === 'A014' && String(state.notes).includes('ללא פוליגון'))
+if (!leviState) errors.push('Actor-period states must preserve non-territorial Levi state')
+const danMigrationState = states.find(state => state.period === 'P03F' && state.actor_id === 'A010')
+if (!danMigrationState || !String(danMigrationState.core_control).includes('ליש')) errors.push('Actor-period states must preserve Dan migration')
+const p08Jebus = states.find(state => state.period === 'P08' && state.actor_id === 'A025' && state.status === 'עצמאית')
+if (!p08Jebus) errors.push('Actor-period states must preserve independent Jebusite Jerusalem in P08')
 
 for (const period of periods) {
   if (!period.name || !period.story || !period.map_rule || !period.confidence) {
@@ -130,4 +149,5 @@ console.log(JSON.stringify({
   judgesEvents: judges.length,
   validationGaps: gaps.length,
   sources: sources.length,
+  actorPeriodStates: states.length,
 }, null, 2))
