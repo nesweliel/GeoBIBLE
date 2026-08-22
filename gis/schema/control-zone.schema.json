@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://geobible.local/schemas/control-zone.schema.json",
+  "title": "GeoBIBLE Historical Control Zone",
+  "type": "object",
+  "required": ["id", "period_id", "actor_id", "control_type", "confidence", "geometry"],
+  "properties": {
+    "id": {"type":"string"},
+    "period_id": {"type":"string"},
+    "actor_id": {"type":"string"},
+    "control_type": {
+      "type":"string",
+      "enum":["core_control","influence","contested","independent_enclave","unclear_control","campaign_corridor"]
+    },
+    "confidence": {
+      "type":"object",
+      "required":["textual","site_identification","spatial_extent"],
+      "properties": {
+        "textual":{"type":"string","enum":["high","medium","low","unknown"]},
+        "site_identification":{"type":"string","enum":["high","medium","low","unknown"]},
+        "spatial_extent":{"type":"string","enum":["high","medium","low","unknown"]}
+      }
+    },
+    "evidence_type": {
+      "type":"array",
+      "items":{"type":"string","enum":["biblical_text","archaeology","historical_reconstruction","topographic_inference","comparative_history"]}
+    },
+    "valid_from": {"type":["string","null"]},
+    "valid_to": {"type":["string","null"]},
+    "notes": {"type":"string"},
+    "sources": {"type":"array","items":{"type":"string"}},
+    "geometry": {
+      "oneOf":[
+        {"$ref":"https://geojson.org/schema/Polygon.json"},
+        {"$ref":"https://geojson.org/schema/MultiPolygon.json"},
+        {"$ref":"https://geojson.org/schema/LineString.json"},
+        {"$ref":"https://geojson.org/schema/MultiLineString.json"}
+      ]
+    }
+  }
+}
