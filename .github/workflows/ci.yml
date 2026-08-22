@@ -2,7 +2,7 @@ name: GeoBIBLE CI
 
 on:
   push:
-    branches: [alpha-0.1]
+    branches: [main]
   pull_request:
     branches: [main]
 
@@ -40,7 +40,7 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-      - name: Upload V1 source for deployment
+      - name: Upload unified V1 source
         uses: actions/upload-artifact@v4
         with:
           name: geobible-v1-source
@@ -50,6 +50,11 @@ jobs:
             app/tsconfig.json
             app/vite.config.ts
             app/src
+            data/states/actor-period-states.v1.json
+            data/master/actors.v1.part1.json
+            data/master/actors.v1.part2.json
+            data/master/actors.v1.part3.json
+            data/master/actors.v1.part4.json
           if-no-files-found: error
           retention-days: 7
 
