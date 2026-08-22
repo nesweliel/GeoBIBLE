@@ -15,4 +15,4 @@ A state answers, for one actor in one historical period:
 
 The application should eventually derive map visibility and narrative context from these records rather than from hard-coded period arrays inside React components.
 
-`actor-period-states.v1.json` is the first canonical migration of the research state model. Additional macro and local states can be appended only if their actor IDs and period IDs already exist in the canonical registries.
+`actor-period-states.v1.json` contains the complete Data Freeze v1 temporal state register: exactly **187 actor-period state records**. The CI data contract validates this exact count and all actor/period foreign keys. Runtime code should treat this file as the canonical temporal source of truth.
