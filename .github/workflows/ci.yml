@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  validate-and-build:
+  validate-build-and-browser-test:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -31,3 +31,9 @@ jobs:
 
       - name: TypeScript + Vite build
         run: npm run build
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser verification
+        run: npm run test:e2e
