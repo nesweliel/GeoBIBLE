@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import maplibregl, { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl'
 import type { Feature, FeatureCollection, GeoJsonProperties, Geometry, Polygon } from 'geojson'
 import { actorById, actors, locationById, locations, periods, routes } from './data/atlasData'
+import { actorPeriodStates, canonicalActorName, statesForPeriod, type ActorPeriodState } from './data/canonicalStates'
 import type { HistoricalActor, HistoricalPeriod, Scale } from './types'
 
 type AtlasFeatureCollection = FeatureCollection<Geometry, GeoJsonProperties>
@@ -316,6 +317,7 @@ export function App() {
   const chapterKey = period.chapter.split(' · ')[0]
   const chapterPeriods = useMemo(() => periods.filter(item => item.chapter.split(' · ')[0] === chapterKey), [chapterKey])
   const actorList = useMemo(() => period.actorIds.map(id => actorById.get(id)).filter((actor): actor is HistoricalActor => Boolean(actor)), [period])
+  const temporalStates = useMemo(() => statesForPeriod(period.id), [period.id])
 
   const searchResults = useMemo<SearchResult[]>(() => {
     const q = searchQuery.trim().toLowerCase()
@@ -417,6 +419,15 @@ export function App() {
     if (periodIndex < periods.length - 1) setPeriodIndex(current => current + 1)
   }
 
+  const chooseTemporalState = (state: ActorPeriodState) => {
+    setSelected({
+      title: canonicalActorName(state.actor_id),
+      subtitle: state.status,
+      body: `גרעין שליטה: ${state.core_control}\nהשפעה: ${state.influence}\nמחלוקת: ${state.contested}\n\nאינטרס: ${state.interest}${state.notes ? `\n\nהערה: ${state.notes}` : ''}`,
+      confidence: state.certainty,
+    })
+  }
+
   const chooseSearchResult = (result: SearchResult) => {
     setSelected({ title: result.name, subtitle: result.subtitle, body: result.body, confidence: result.confidence })
     setSearchOpen(false)
@@ -503,10 +514,10 @@ export function App() {
           <button className="panel-collapse" onClick={() => setPanelOpen(open => !open)}>{panelOpen ? '◀' : '▶'}</button>
           {panelOpen && <>
             <div className="archive-label">TABLET {String(periodIndex + 1).padStart(2, '0')} · {period.id}</div><h2>{period.label}</h2><p className="subtitle">{period.subtitle}</p><blockquote>{period.thesis}</blockquote>
-            <div className="situation-grid"><div><span>קנה מידה</span><strong>{period.scale}</strong></div><div><span>שחקנים פעילים</span><strong>{actorList.length}</strong></div><div><span>מוקדים</span><strong>{period.locationIds.length}</strong></div><div><span>שכבות GIS</span><strong>{ZONES[period.id]?.length ?? 0}</strong></div></div>
+            <div className="situation-grid"><div><span>קנה מידה</span><strong>{period.scale}</strong></div><div><span>שחקנים פעילים</span><strong>{actorList.length}</strong></div><div><span>מצבי זמן קנוניים</span><strong>{temporalStates.length}</strong></div><div><span>מוקדים</span><strong>{period.locationIds.length}</strong></div><div><span>שכבות GIS</span><strong>{ZONES[period.id]?.length ?? 0}</strong></div></div>
 
             {mode === 'story' ? <div className="story-beat"><div className="beat-counter">{storyBeat + 1} / {period.beats.length}</div><span>{period.beats[storyBeat].label}</span><p>{period.beats[storyBeat].text}</p><button className="primary-action" onClick={nextBeat}>{storyBeat < period.beats.length - 1 ? 'המשך בסיפור' : periodIndex < periods.length - 1 ? 'לתקופה הבאה' : 'סוף הציר'}</button></div>
-              : <><div className="section-title">שחקנים בתקופה</div><div className="actor-list">{actorList.map(actor => <button key={actor.id} onClick={() => setSelected(selectActor(actor))}><strong>{actor.name}</strong><span>{actor.category}</span><em>{actor.status}</em></button>)}</div></>}
+              : <><div className="section-title">שחקנים בתקופה</div><div className="actor-list">{actorList.map(actor => <button key={actor.id} onClick={() => setSelected(selectActor(actor))}><strong>{actor.name}</strong><span>{actor.category}</span><em>{actor.status}</em></button>)}</div><div className="section-title">רשם מצב קנוני</div><div className="actor-list temporal-state-list">{temporalStates.map((state, index) => <button key={`${state.actor_id}-${index}`} onClick={() => chooseTemporalState(state)}><strong>{canonicalActorName(state.actor_id)}</strong><span>{state.status}</span><em>{state.core_control} · {state.interest}</em></button>)}</div></>}
 
             <div className="section-title">מה השתנה</div><ol className="changes-list">{period.changes.map(change => <li key={change}>{change}</li>)}</ol>
             <div className="map-rule"><span>כלל מפה</span><p>{period.mapNote}</p></div>
@@ -515,7 +526,7 @@ export function App() {
         </aside>
       </section>
 
-      <footer className="footerbar"><span>GeoBIBLE V1</span><span>{actors.length} runtime actors · {locations.length} geocoded records · {periods.length} master states</span><span>OpenFreeMap © OpenMapTiles · Data from OpenStreetMap</span></footer>
+      <footer className="footerbar"><span>GeoBIBLE V1</span><span>{actors.length} runtime actors · {actorPeriodStates.length} canonical temporal states · {locations.length} geocoded records · {periods.length} master periods</span><span>OpenFreeMap © OpenMapTiles · Data from OpenStreetMap</span></footer>
 
       {sourcesOpen && <div className="drawer-backdrop" onClick={() => setSourcesOpen(false)}><aside className="sources-drawer" onClick={event => event.stopPropagation()}><button className="drawer-close" onClick={() => setSourcesOpen(false)}>×</button><div className="eyebrow">EVIDENCE & SOURCES</div><h2>מקורות — {period.label}</h2><p>המקורות תומכים במסגרת הטקסטואלית וההיסטורית. גבולות ההשפעה עצמם נשארים שכבת רקונסטרוקציה עם רמת ודאות נפרדת.</p><div className="source-list">{(PERIOD_SOURCES[period.id] ?? []).map(source => <a key={source.url} href={source.url} target="_blank" rel="noreferrer"><strong>{source.title}</strong><span>{source.note}</span></a>)}</div><div className="source-method"><span>3 שכבות ודאות</span><ol><li>ודאות טקסטואלית</li><li>ודאות בזיהוי האתר</li><li>ודאות בהיקף הטריטוריאלי</li></ol></div></aside></div>}
     </main>
