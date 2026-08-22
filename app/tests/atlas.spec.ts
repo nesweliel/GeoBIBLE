@@ -16,11 +16,11 @@ test('GeoBIBLE loads vector map and timeline', async ({ page }) => {
   expect(box?.width ?? 0).toBeGreaterThan(500)
   expect(box?.height ?? 0).toBeGreaterThan(400)
 
-  await expect(page.getByText('דוד בחברון ואיש־בושת במחניים', { exact: false })).toBeVisible()
+  await expect(page.locator('.story-panel h2')).toHaveText('שתי ממלכות — ירושלים עדיין עצמאית')
 
   const firstPeriod = page.locator('.timeline-node').first()
   await firstPeriod.click()
-  await expect(page.getByText('כניסה וכיבוש ראשוני', { exact: true }).first()).toBeVisible()
+  await expect(page.locator('.story-panel h2')).toHaveText('כניסה וכיבוש ראשוני')
 
   await page.getByRole('button', { name: 'חקירה חופשית' }).click()
   await expect(page.getByText('שחקנים בתקופה')).toBeVisible()
