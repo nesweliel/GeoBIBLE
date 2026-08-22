@@ -8,6 +8,7 @@ type AtlasFeatureCollection = FeatureCollection<Geometry, GeoJsonProperties>
 type Selection = { title: string; subtitle: string; body: string; confidence: string }
 type SearchResult = { id: string; name: string; subtitle: string; coordinates: [number, number]; kind: 'actor' | 'site'; confidence: string; body: string }
 type ZoneSpec = { actorId: string; rx?: number; ry?: number; type?: string; label?: string; color?: string }
+type MapProperties = Record<string, unknown>
 
 const SCALE_ORDER: Record<Scale, number> = { world: 0, levant: 1, local: 2 }
 const EMPTY: AtlasFeatureCollection = { type: 'FeatureCollection', features: [] }
@@ -342,10 +343,10 @@ export function App() {
       stripModernContext(map)
       addHistoricalLayers(map)
 
-      const wire = (layerId: string, handler: (props: GeoJsonProperties) => Selection) => {
+      const wire = (layerId: string, handler: (props: MapProperties) => Selection) => {
         map.on('click', layerId, event => {
           const props = event.features?.[0]?.properties
-          if (props) setSelected(handler(props))
+          if (props) setSelected(handler(props as MapProperties))
         })
         map.on('mouseenter', layerId, () => { map.getCanvas().style.cursor = 'pointer' })
         map.on('mouseleave', layerId, () => { map.getCanvas().style.cursor = '' })
