@@ -40,6 +40,19 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+      - name: Upload V1 source for deployment
+        uses: actions/upload-artifact@v4
+        with:
+          name: geobible-v1-source
+          path: |
+            app/index.html
+            app/package.json
+            app/tsconfig.json
+            app/vite.config.ts
+            app/src
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
