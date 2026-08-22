@@ -32,6 +32,14 @@ jobs:
       - name: TypeScript + Vite build
         run: npm run build
 
+      - name: Upload production build
+        uses: actions/upload-artifact@v4
+        with:
+          name: geobible-production-dist
+          path: app/dist
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
